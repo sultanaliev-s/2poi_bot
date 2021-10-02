@@ -32,13 +32,6 @@ func populateQwertys() {
 	}
 }
 
-// func init() {
-// 	// loads values from .env into the system
-// 	if err := godotenv.Load(); err != nil {
-// 		log.Print("No .env file found")
-// 	}
-// }
-
 func run() {
 	log.Print("sha")
 	botToken := os.Getenv("BOT_TOKEN")
@@ -88,33 +81,6 @@ func main() {
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatal(err)
 	}
-
-	log.Print("sha")
-	botToken := os.Getenv("BOT_TOKEN")
-	botApi := "https://api.telegram.org/bot"
-	botUrl := botApi + botToken
-	offset := 0
-	if len(botToken) != 0 {
-		log.Print("token found")
-	}
-	if len(botToken) == 0 {
-		log.Print("token not found")
-	}
-
-	for {
-		updates, err := getUpdates(botUrl, offset)
-		if err != nil {
-			log.Println("Something went wrong:", err)
-		}
-
-		for _, update := range updates {
-			err = respond(botUrl, update)
-			if err != nil {
-				log.Println("Something went wrong:", err)
-			}
-			offset = update.UpdateId + 1
-		}
-	}
 }
 
 func getUpdates(botUrl string, offset int) ([]Update, error) {
@@ -140,13 +106,13 @@ func getUpdates(botUrl string, offset int) ([]Update, error) {
 }
 
 func respond(botUrl string, update Update) error {
-	// if !shouldRespond(update) {
-	// 	return nil
-	// }
+	if !shouldRespond(update) {
+		return nil
+	}
 
 	var botMessage BotMessage
 	botMessage.ChatId = update.Message.Chat.ChatId
-	botMessage.Text = "TUP" //translate(&update.Message.ReplyToMessage.Text)
+	botMessage.Text = translate(&update.Message.ReplyToMessage.Text)
 
 	buf, err := json.Marshal(botMessage)
 	if err != nil {
