@@ -113,7 +113,7 @@ func respond(botUrl string, update Update) error {
 	var botMessage BotMessage
 	botMessage.ChatId = update.Message.Chat.ChatId
 	botMessage.Text = translate(&update.Message.ReplyToMessage.Text) +
-		"\n" + getQuote(&update.Message.Sender)
+		"\n" + getQuote(&update.Message.ReplyToMessage.Sender)
 
 	buf, err := json.Marshal(botMessage)
 	if err != nil {
