@@ -33,17 +33,10 @@ func populateQwertys() {
 }
 
 func run() {
-	log.Print("sha")
 	botToken := os.Getenv("BOT_TOKEN")
 	botApi := "https://api.telegram.org/bot"
 	botUrl := botApi + botToken
 	offset := 0
-	if len(botToken) != 0 {
-		log.Print("token found")
-	}
-	if len(botToken) == 0 {
-		log.Print("token not found")
-	}
 
 	for {
 		updates, err := getUpdates(botUrl, offset)
@@ -68,14 +61,11 @@ func handler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	populateQwertys()
 
-	log.Print("ya")
-
 	port := os.Getenv("PORT")
-	log.Print("ta")
-
 	if len(port) == 0 {
 		port = "8080"
 	}
+
 	http.HandleFunc("/", handler)
 
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
