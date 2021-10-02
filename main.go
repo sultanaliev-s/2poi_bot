@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -71,7 +70,6 @@ func main() {
 			}
 			offset = update.UpdateId + 1
 		}
-		fmt.Println(updates)
 	}
 }
 
