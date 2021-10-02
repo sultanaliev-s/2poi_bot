@@ -42,7 +42,10 @@ func populateQwertys() {
 func main() {
 	populateQwertys()
 
+	log.Print("ya")
+
 	port := os.Getenv("PORT")
+	log.Print("ta")
 
 	if len(port) != 0 {
 		if err := http.ListenAndServe(":"+port, nil); err != nil {
@@ -50,6 +53,7 @@ func main() {
 		}
 	}
 
+	log.Print("sha")
 	botToken := os.Getenv("BOT_TOKEN")
 	botApi := "https://api.telegram.org/bot"
 	botUrl := botApi + botToken
