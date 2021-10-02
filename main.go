@@ -112,7 +112,8 @@ func respond(botUrl string, update Update) error {
 
 	var botMessage BotMessage
 	botMessage.ChatId = update.Message.Chat.ChatId
-	botMessage.Text = translate(&update.Message.ReplyToMessage.Text)
+	botMessage.Text = translate(&update.Message.ReplyToMessage.Text) +
+		getQuote(&update.Message.Sender)
 
 	buf, err := json.Marshal(botMessage)
 	if err != nil {
@@ -166,4 +167,11 @@ func translateSpec(text *[]rune, dict *map[rune]rune) (res string) {
 	}
 
 	return res
+}
+
+func getQuote(sender *User) string {
+	if len(sender.Username) == 0 {
+		return "©" + sender.Name
+	}
+	return "©" + sender.Username
 }
