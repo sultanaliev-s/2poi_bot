@@ -1,1 +1,1 @@
-worker: bin/2poi_bot
+web: bin/2poi_bot
