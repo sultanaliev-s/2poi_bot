@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -10,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/joho/godotenv"
 )
 
 var qwertyLtoc map[rune]rune
@@ -32,17 +35,22 @@ func populateQwertys() {
 	}
 }
 
+func init() {
+	// loads values from .env into the system
+	if err := godotenv.Load(); err != nil {
+		log.Print("No .env file found")
+	}
+}
+
 func main() {
 	populateQwertys()
 
 	port := os.Getenv("PORT")
 
-	if len(port) == 0 {
-		port = "8080"
-	}
-
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		log.Fatal(err)
+	if len(port) != 0 {
+		if err := http.ListenAndServe(":"+port, nil); err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	botToken := os.Getenv("BOT_TOKEN")
@@ -63,6 +71,7 @@ func main() {
 			}
 			offset = update.UpdateId + 1
 		}
+		fmt.Println(updates)
 	}
 }
 
@@ -89,13 +98,13 @@ func getUpdates(botUrl string, offset int) ([]Update, error) {
 }
 
 func respond(botUrl string, update Update) error {
-	// if !shouldRespond(update) {
-	// 	return nil
-	// }
+	if !shouldRespond(update) {
+		return nil
+	}
 
 	var botMessage BotMessage
 	botMessage.ChatId = update.Message.Chat.ChatId
-	botMessage.Text = "OP" //translate(&update.Message.ReplyToMessage.Text)
+	botMessage.Text = translate(&update.Message.ReplyToMessage.Text)
 
 	buf, err := json.Marshal(botMessage)
 	if err != nil {
