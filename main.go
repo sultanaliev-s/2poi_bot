@@ -39,19 +39,55 @@ func populateQwertys() {
 // 	}
 // }
 
+func run() {
+	log.Print("sha")
+	botToken := os.Getenv("BOT_TOKEN")
+	botApi := "https://api.telegram.org/bot"
+	botUrl := botApi + botToken
+	offset := 0
+	if len(botToken) != 0 {
+		log.Print("token found")
+	}
+	if len(botToken) == 0 {
+		log.Print("token not found")
+	}
+
+	for {
+		updates, err := getUpdates(botUrl, offset)
+		if err != nil {
+			log.Println("Something went wrong:", err)
+		}
+
+		for _, update := range updates {
+			err = respond(botUrl, update)
+			if err != nil {
+				log.Println("Something went wrong:", err)
+			}
+			offset = update.UpdateId + 1
+		}
+	}
+}
+
+func handler(w http.ResponseWriter, r *http.Request) {
+	go run()
+}
+
 func main() {
 	populateQwertys()
 
 	log.Print("ya")
 
-	// port := os.Getenv("PORT")
+	port := os.Getenv("PORT")
 	log.Print("ta")
 
-	// if len(port) != 0 {
-	// 	if err := http.ListenAndServe(":"+port, nil); err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// }
+	if len(port) == 0 {
+		port = "8080"
+	}
+	http.HandleFunc("/", handler)
+
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
+		log.Fatal(err)
+	}
 
 	log.Print("sha")
 	botToken := os.Getenv("BOT_TOKEN")
