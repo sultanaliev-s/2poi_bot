@@ -89,13 +89,13 @@ func getUpdates(botUrl string, offset int) ([]Update, error) {
 }
 
 func respond(botUrl string, update Update) error {
-	if !shouldRespond(update) {
-		return nil
-	}
+	// if !shouldRespond(update) {
+	// 	return nil
+	// }
 
 	var botMessage BotMessage
 	botMessage.ChatId = update.Message.Chat.ChatId
-	botMessage.Text = translate(&update.Message.ReplyToMessage.Text)
+	botMessage.Text = "OP" //translate(&update.Message.ReplyToMessage.Text)
 
 	buf, err := json.Marshal(botMessage)
 	if err != nil {
