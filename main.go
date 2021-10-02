@@ -44,14 +44,14 @@ func main() {
 
 	log.Print("ya")
 
-	port := os.Getenv("PORT")
+	// port := os.Getenv("PORT")
 	log.Print("ta")
 
-	if len(port) != 0 {
-		if err := http.ListenAndServe(":"+port, nil); err != nil {
-			log.Fatal(err)
-		}
-	}
+	// if len(port) != 0 {
+	// 	if err := http.ListenAndServe(":"+port, nil); err != nil {
+	// 		log.Fatal(err)
+	// 	}
+	// }
 
 	log.Print("sha")
 	botToken := os.Getenv("BOT_TOKEN")
