@@ -10,8 +10,6 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
-
-	"github.com/joho/godotenv"
 )
 
 var qwertyLtoc map[rune]rune
@@ -34,12 +32,12 @@ func populateQwertys() {
 	}
 }
 
-func init() {
-	// loads values from .env into the system
-	if err := godotenv.Load(); err != nil {
-		log.Print("No .env file found")
-	}
-}
+// func init() {
+// 	// loads values from .env into the system
+// 	if err := godotenv.Load(); err != nil {
+// 		log.Print("No .env file found")
+// 	}
+// }
 
 func main() {
 	populateQwertys()
@@ -56,6 +54,12 @@ func main() {
 	botApi := "https://api.telegram.org/bot"
 	botUrl := botApi + botToken
 	offset := 0
+	if len(botToken) != 0 {
+		log.Print("token found")
+	}
+	if len(botToken) == 0 {
+		log.Print("token not found")
+	}
 
 	for {
 		updates, err := getUpdates(botUrl, offset)
@@ -96,13 +100,13 @@ func getUpdates(botUrl string, offset int) ([]Update, error) {
 }
 
 func respond(botUrl string, update Update) error {
-	if !shouldRespond(update) {
-		return nil
-	}
+	// if !shouldRespond(update) {
+	// 	return nil
+	// }
 
 	var botMessage BotMessage
 	botMessage.ChatId = update.Message.Chat.ChatId
-	botMessage.Text = translate(&update.Message.ReplyToMessage.Text)
+	botMessage.Text = "TUP" //translate(&update.Message.ReplyToMessage.Text)
 
 	buf, err := json.Marshal(botMessage)
 	if err != nil {
