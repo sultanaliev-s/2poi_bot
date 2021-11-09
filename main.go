@@ -60,9 +60,9 @@ func run() {
 }
 
 func getUpdates(botUrl string, offset int) ([]Update, error) {
-	requestURL := fmt.Sprintf("%s%s%s%d%s%d%s%s",
-		botUrl, "/getupdates", "?offset=", offset, "&?timeout=", 5,
-		"&?allowed_updates=", "[\"message\"]")
+	requestURL := fmt.Sprintf("%s/%s?%s=%d&?%s=%d&?%s=%s",
+		botUrl, "getupdates", "offset", offset, "timeout=", 5,
+		"allowed_updates=", "[\"message\"]")
 
 	resp, err := http.Get(requestURL)
 	if err != nil {
