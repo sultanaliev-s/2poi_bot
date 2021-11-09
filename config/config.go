@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"os"
+	"strconv"
 )
 
 type Config struct {
@@ -10,6 +11,7 @@ type Config struct {
 	BOT_API   string
 	BOT_URL   string
 	PORT      string
+	IS_LOCAL  bool
 }
 
 func New() *Config {
@@ -19,6 +21,11 @@ func New() *Config {
 		PORT:      getEnv("PORT", "8080"),
 	}
 	conf.BOT_URL = conf.BOT_API + conf.BOT_TOKEN
+	isLocal, err := strconv.ParseBool(getEnv("IS_LOCAL", "true"))
+	if err != nil {
+		isLocal = true
+	}
+	conf.IS_LOCAL = isLocal
 
 	return &conf
 }

@@ -30,10 +30,60 @@ func main() {
 	conf = config.New()
 	populateQwertys()
 
-	http.HandleFunc("/", handler)
+	webhookWasSet := true
+	if !conf.IS_LOCAL {
+		http.HandleFunc("/"+conf.BOT_TOKEN, postUpdates)
+		err := setWebhook(conf.BOT_URL, conf.BOT_TOKEN)
+		if err != nil {
+			webhookWasSet = false
+		}
+	}
+	if conf.IS_LOCAL || !webhookWasSet {
+		http.HandleFunc("/", handler)
+	}
 
 	if err := http.ListenAndServe(":"+conf.PORT, nil); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func setWebhook(botURL string, botToken string) error {
+	requestURL := fmt.Sprintf("%s/%s?%s=%s%s&?%s=%s",
+		botURL, "setWebhook", "url", "https://twopoibot.herokuapp.com/",
+		botToken, "drop_pending_updates", "True")
+	_, err := http.Get(requestURL)
+	if err != nil {
+		log.Println("Could not set a webhook.")
+		return err
+	}
+
+	return nil
+}
+
+func postUpdates(w http.ResponseWriter, r *http.Request) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Println("Could not read request body in postUpdates.")
+		return
+	}
+
+	var restResponse RestResponse
+	err = json.Unmarshal(body, &restResponse)
+	if err != nil {
+		log.Println("Could not read request body in postUpdates.")
+		return
+	}
+
+	updates := restResponse.Result
+	respondToUpdates(updates)
+}
+
+func respondToUpdates(updates []Update) {
+	for _, update := range updates {
+		err := respond(conf.BOT_URL, update)
+		if err != nil {
+			log.Println("Something went wrong:", err)
+		}
 	}
 }
 
@@ -48,9 +98,8 @@ func run() {
 		if err != nil {
 			log.Println("Something went wrong:", err)
 		}
-
 		for _, update := range updates {
-			err = respond(conf.BOT_URL, update)
+			err := respond(conf.BOT_URL, update)
 			if err != nil {
 				log.Println("Something went wrong:", err)
 			}
