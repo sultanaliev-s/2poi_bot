@@ -1,75 +1,62 @@
 package main
 
 import (
+	"2poi_bot/config"
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/joho/godotenv"
 )
+
+var conf *config.Config
 
 var qwertyLtoc map[rune]rune
 var qwertyCtol map[rune]rune
 
-func populateQwertys() {
-	qwertyLtoc = make(map[rune]rune)
-	qwertyCtol = make(map[rune]rune)
-
-	eng := []rune(
-		"qwertyuiop[]asdfghjkl;'zxcvbnm,./QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>?&")
-	rus := []rune(
-		"йцукенгшщзхъфывапролджэячсмитьбю.ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ,?")
-
-	for i, v := range eng {
-		qwertyLtoc[v] = rune(rus[i])
-	}
-	for i, v := range rus {
-		qwertyCtol[v] = rune(eng[i])
+func init() {
+	// loads values from .env into the system
+	if err := godotenv.Load(); err != nil {
+		log.Print("No .env file found")
 	}
 }
 
+func main() {
+	conf = config.New()
+	populateQwertys()
+
+	http.HandleFunc("/", handler)
+
+	if err := http.ListenAndServe(":"+conf.PORT, nil); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func handler(w http.ResponseWriter, r *http.Request) {
+	run()
+}
+
 func run() {
-	botToken := os.Getenv("BOT_TOKEN")
-	botApi := "https://api.telegram.org/bot"
-	botUrl := botApi + botToken
 	offset := 0
 
 	for {
-		updates, err := getUpdates(botUrl, offset)
+		updates, err := getUpdates(conf.BOT_URL, offset)
 		if err != nil {
 			log.Println("Something went wrong:", err)
 		}
 
 		for _, update := range updates {
-			err = respond(botUrl, update)
+			err = respond(conf.BOT_URL, update)
 			if err != nil {
 				log.Println("Something went wrong:", err)
 			}
 			offset = update.UpdateId + 1
 		}
-	}
-}
-
-func handler(w http.ResponseWriter, r *http.Request) {
-	go run()
-}
-
-func main() {
-	populateQwertys()
-
-	port := os.Getenv("PORT")
-	if len(port) == 0 {
-		port = "8080"
-	}
-
-	http.HandleFunc("/", handler)
-
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		log.Fatal(err)
 	}
 }
 
@@ -164,4 +151,21 @@ func getQuote(sender *User) string {
 		return "©" + sender.Name
 	}
 	return "©" + sender.Username
+}
+
+func populateQwertys() {
+	qwertyLtoc = make(map[rune]rune)
+	qwertyCtol = make(map[rune]rune)
+
+	eng := []rune(
+		"qwertyuiop[]asdfghjkl;'zxcvbnm,./QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>?&")
+	rus := []rune(
+		"йцукенгшщзхъфывапролджэячсмитьбю.ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ,?")
+
+	for i, v := range eng {
+		qwertyLtoc[v] = rune(rus[i])
+	}
+	for i, v := range rus {
+		qwertyCtol[v] = rune(eng[i])
+	}
 }
