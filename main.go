@@ -72,23 +72,16 @@ func postUpdates(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var restResponse RestResponse
-	err = json.Unmarshal(body, &restResponse)
+	var update Update
+	err = json.Unmarshal(body, &update)
 	if err != nil {
 		log.Println("Could not read request body in postUpdates.")
 		return
 	}
 
-	updates := restResponse.Result
-	respondToUpdates(updates)
-}
-
-func respondToUpdates(updates []Update) {
-	for _, update := range updates {
-		err := respond(conf.BOT_URL, update)
-		if err != nil {
-			log.Println("Something went wrong:", err)
-		}
+	err = respond(conf.BOT_URL, update)
+	if err != nil {
+		log.Println("Something went wrong:", err)
 	}
 }
 
