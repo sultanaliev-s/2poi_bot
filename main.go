@@ -4,10 +4,10 @@ import (
 	"2poi_bot/config"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
 	"unicode"
 
@@ -43,7 +43,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func run() {
 	offset := 0
-
 	for {
 		updates, err := getUpdates(conf.BOT_URL, offset)
 		if err != nil {
@@ -61,8 +60,11 @@ func run() {
 }
 
 func getUpdates(botUrl string, offset int) ([]Update, error) {
-	resp, err := http.Get(botUrl + "/getupdates" +
-		"?offset=" + strconv.Itoa(offset))
+	requestURL := fmt.Sprintf("%s%s%s%d%s%d%s%s",
+		botUrl, "/getupdates", "?offset=", offset, "&?timeout=", 5,
+		"&?allowed_updates=", "[\"message\"]")
+
+	resp, err := http.Get(requestURL)
 	if err != nil {
 		return nil, err
 	}
@@ -97,10 +99,8 @@ func respond(botUrl string, update Update) error {
 		return err
 	}
 
-	_, err = http.Post(
-		botUrl+"/sendMessage",
-		"application/json",
-		bytes.NewBuffer(buf))
+	requestURl := botUrl + "/sendMessage"
+	_, err = http.Post(requestURl, "application/json", bytes.NewBuffer(buf))
 
 	if err != nil {
 		return err
@@ -113,10 +113,7 @@ func shouldRespond(update Update) bool {
 	if update.Message.ReplyToMessage == nil {
 		return false
 	}
-	if !strings.Contains(update.Message.Text, "@TwoPoiBot") {
-		return false
-	}
-	return true
+	return strings.Contains(update.Message.Text, "@TwoPoiBot")
 }
 
 func translate(str *string) (res string) {
