@@ -30,6 +30,7 @@ func main() {
 	conf = config.New()
 	populateQwertys()
 
+	removeWebhook(conf.BOT_URL)
 	webhookWasSet := true
 	if !conf.IS_LOCAL {
 		http.HandleFunc("/"+conf.BOT_TOKEN, postUpdates)
@@ -45,6 +46,10 @@ func main() {
 	if err := http.ListenAndServe(":"+conf.PORT, nil); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func removeWebhook(botURL string) {
+	http.Get(botURL + "/deleteWebhook")
 }
 
 func setWebhook(botURL string, botToken string) error {
