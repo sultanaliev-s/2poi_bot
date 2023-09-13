@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -30,20 +30,21 @@ func main() {
 	conf = config.New()
 	populateQwertys()
 
-	removeWebhook(conf.BOT_URL)
+	removeWebhook(conf.TWOPOI_BOT_URL)
 	webhookWasSet := true
-	if !conf.IS_LOCAL {
-		http.HandleFunc("/"+conf.BOT_TOKEN, postUpdates)
-		err := setWebhook(conf.BOT_URL, conf.BOT_TOKEN)
+	if !conf.TWOPOI_IS_LOCAL {
+		http.HandleFunc("/"+conf.TWOPOI_BOT_TOKEN, postUpdates)
+		err := setWebhook(
+			conf.TWOPOI_BOT_URL, conf.TWOPOI_BOT_TOKEN, conf.TWOPOI_HOST)
 		if err != nil {
 			webhookWasSet = false
 		}
 	}
-	if conf.IS_LOCAL || !webhookWasSet {
+	if conf.TWOPOI_IS_LOCAL || !webhookWasSet {
 		http.HandleFunc("/", handler)
 	}
 
-	if err := http.ListenAndServe(":"+conf.PORT, nil); err != nil {
+	if err := http.ListenAndServe(":"+conf.TWOPOI_PORT, nil); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -52,9 +53,9 @@ func removeWebhook(botURL string) {
 	http.Get(botURL + "/deleteWebhook")
 }
 
-func setWebhook(botURL string, botToken string) error {
+func setWebhook(botURL string, botToken string, botHost string) error {
 	requestURL := fmt.Sprintf("%s/%s?%s=%s%s&?%s=%s",
-		botURL, "setWebhook", "url", "https://twopoibot.herokuapp.com/",
+		botURL, "setWebhook", "url", botHost,
 		botToken, "drop_pending_updates", "True")
 	_, err := http.Get(requestURL)
 	if err != nil {
@@ -62,11 +63,12 @@ func setWebhook(botURL string, botToken string) error {
 		return err
 	}
 
+	log.Println("Successfully set webhook.")
 	return nil
 }
 
 func postUpdates(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Println("Could not read request body in postUpdates.")
 		return
@@ -79,7 +81,7 @@ func postUpdates(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = respond(conf.BOT_URL, update)
+	err = respond(conf.TWOPOI_BOT_URL, update)
 	if err != nil {
 		log.Println("Something went wrong:", err)
 	}
@@ -92,12 +94,12 @@ func handler(w http.ResponseWriter, r *http.Request) {
 func run() {
 	offset := 0
 	for {
-		updates, err := getUpdates(conf.BOT_URL, offset)
+		updates, err := getUpdates(conf.TWOPOI_BOT_URL, offset)
 		if err != nil {
 			log.Println("Something went wrong:", err)
 		}
 		for _, update := range updates {
-			err := respond(conf.BOT_URL, update)
+			err := respond(conf.TWOPOI_BOT_URL, update)
 			if err != nil {
 				log.Println("Something went wrong:", err)
 			}
@@ -117,7 +119,7 @@ func getUpdates(botUrl string, offset int) ([]Update, error) {
 	}
 
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

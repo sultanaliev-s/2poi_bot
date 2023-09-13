@@ -7,25 +7,27 @@ import (
 )
 
 type Config struct {
-	BOT_TOKEN string
-	BOT_API   string
-	BOT_URL   string
-	PORT      string
-	IS_LOCAL  bool
+	TWOPOI_BOT_TOKEN string
+	TWOPOI_BOT_API   string
+	TWOPOI_BOT_URL   string
+	TWOPOI_HOST      string
+	TWOPOI_PORT      string
+	TWOPOI_IS_LOCAL  bool
 }
 
 func New() *Config {
 	conf := Config{
-		BOT_TOKEN: getRequiredEnv("BOT_TOKEN"),
-		BOT_API:   getRequiredEnv("BOT_API"),
-		PORT:      getEnv("PORT", "8080"),
+		TWOPOI_BOT_TOKEN: getRequiredEnv("TWOPOI_BOT_TOKEN"),
+		TWOPOI_BOT_API:   getRequiredEnv("TWOPOI_BOT_API"),
+		TWOPOI_HOST:      getRequiredEnv("TWOPOI_HOST"),
+		TWOPOI_PORT:      getEnv("TWOPOI_PORT", "8080"),
 	}
-	conf.BOT_URL = conf.BOT_API + conf.BOT_TOKEN
-	isLocal, err := strconv.ParseBool(getEnv("IS_LOCAL", "true"))
+	conf.TWOPOI_BOT_URL = conf.TWOPOI_BOT_API + conf.TWOPOI_BOT_TOKEN
+	isLocal, err := strconv.ParseBool(getEnv("TWOPOI_IS_LOCAL", "true"))
 	if err != nil {
 		isLocal = true
 	}
-	conf.IS_LOCAL = isLocal
+	conf.TWOPOI_IS_LOCAL = isLocal
 
 	return &conf
 }
